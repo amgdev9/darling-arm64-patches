@@ -1,3 +1,13 @@
+From d64125c5f24c0e021c44eda0dbb37225b853846e Mon Sep 17 00:00:00 2001
+From: AMG <andresmargar98@proton.me>
+Date: Sat, 7 Feb 2026 12:51:17 +0000
+Subject: [PATCH] 01-cmake
+
+---
+ CMakeLists.txt           |  5 +++++
+ duct-tape/CMakeLists.txt | 23 ++++++++++++++++++++---
+ 2 files changed, 25 insertions(+), 3 deletions(-)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 4920879..9300fa9 100644
 --- a/CMakeLists.txt
@@ -69,3 +79,6 @@ index 5950c7f..fc83ce6 100644
  set_source_files_properties(pthread/kern_synch.c PROPERTIES
  	COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/pthread"
  )
+-- 
+2.47.3
+

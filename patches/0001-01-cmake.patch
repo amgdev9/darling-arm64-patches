@@ -1,3 +1,25 @@
+From e00f9e20b542ef8fac74a4a1031c3cce3b725ecd Mon Sep 17 00:00:00 2001
+From: AMG <andresmargar98@proton.me>
+Date: Sat, 7 Feb 2026 12:51:24 +0000
+Subject: [PATCH] 01-cmake
+
+chore: update submodules
+---
+ CMakeLists.txt                                |  1 +
+ cmake/architecture.cmake                      |  5 +++
+ src/external/bootstrap_cmds                   |  2 +-
+ src/external/corefoundation                   |  2 +-
+ src/external/darlingserver                    |  2 +-
+ src/external/libplatform                      |  2 +-
+ src/external/security                         |  2 +-
+ src/external/xnu                              |  2 +-
+ src/frameworks/CoreServices/CMakeLists.txt    | 11 ++++--
+ .../CoreServices/reexport.arm64.exp           |  8 ++++
+ src/libm/CMakeLists.txt                       | 37 +++++++++++++++++++
+ src/startup/CMakeLists.txt                    |  4 ++
+ 12 files changed, 69 insertions(+), 9 deletions(-)
+ create mode 100644 src/frameworks/CoreServices/reexport.arm64.exp
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 86424af6f..f365bfef8 100644
 --- a/CMakeLists.txt
@@ -33,6 +55,48 @@ index 1f6553472..f534ed0f8 100644
      else ()
          set(BUILD_TARGET_64BIT FALSE)
          set(APPLE_TARGET_TRIPLET_64BIT "")
+diff --git a/src/external/bootstrap_cmds b/src/external/bootstrap_cmds
+index 0f300a7a0..c31385582 160000
+--- a/src/external/bootstrap_cmds
++++ b/src/external/bootstrap_cmds
+@@ -1 +1 @@
+-Subproject commit 0f300a7a04bb1174a3b7db58b57d738aadc14e13
++Subproject commit c31385582c1c239470f0957d1c596a421b821595
+diff --git a/src/external/corefoundation b/src/external/corefoundation
+index ef09be6e9..c0203b301 160000
+--- a/src/external/corefoundation
++++ b/src/external/corefoundation
+@@ -1 +1 @@
+-Subproject commit ef09be6e9a691129733464dbc0df4910410d0889
++Subproject commit c0203b30124359554074375193196f4f682e9c4b
+diff --git a/src/external/darlingserver b/src/external/darlingserver
+index 89751e64b..d64125c5f 160000
+--- a/src/external/darlingserver
++++ b/src/external/darlingserver
+@@ -1 +1 @@
+-Subproject commit 89751e64bc6c2082f7725061824ee0e33395b0de
++Subproject commit d64125c5f24c0e021c44eda0dbb37225b853846e
+diff --git a/src/external/libplatform b/src/external/libplatform
+index 5a3e5b529..488a5408a 160000
+--- a/src/external/libplatform
++++ b/src/external/libplatform
+@@ -1 +1 @@
+-Subproject commit 5a3e5b529d25c70257dcfa97e94f1826e71e9f40
++Subproject commit 488a5408a3acea4d83a1a14ddf2c20a44b8994f1
+diff --git a/src/external/security b/src/external/security
+index 3cfffcf2c..9b5b21554 160000
+--- a/src/external/security
++++ b/src/external/security
+@@ -1 +1 @@
+-Subproject commit 3cfffcf2c5b5900169c964facdf42cc05c23005c
++Subproject commit 9b5b215545ee98c9ecbb58e280926bbc99d9afdd
+diff --git a/src/external/xnu b/src/external/xnu
+index 5f26a4c23..828af4bb6 160000
+--- a/src/external/xnu
++++ b/src/external/xnu
+@@ -1 +1 @@
+-Subproject commit 5f26a4c2365d9774b5a1e66ae7da20b61ab6d2db
++Subproject commit 828af4bb613315c85cadb254d6d283e1746010ec
 diff --git a/src/frameworks/CoreServices/CMakeLists.txt b/src/frameworks/CoreServices/CMakeLists.txt
 index 3fac3be55..2bf9bc36a 100644
 --- a/src/frameworks/CoreServices/CMakeLists.txt
@@ -139,3 +203,6 @@ index 817f2453a..a551e7aaf 100644
  add_executable(darling darling.c)
  
  target_link_libraries(darling -lutil)
+-- 
+2.47.3
+

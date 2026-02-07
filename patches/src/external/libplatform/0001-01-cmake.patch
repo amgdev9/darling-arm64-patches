@@ -1,3 +1,12 @@
+From 488a5408a3acea4d83a1a14ddf2c20a44b8994f1 Mon Sep 17 00:00:00 2001
+From: AMG <andresmargar98@proton.me>
+Date: Sat, 7 Feb 2026 12:51:18 +0000
+Subject: [PATCH] 01-cmake
+
+---
+ CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 54d2843..bc51331 100644
 --- a/CMakeLists.txt
@@ -12,3 +21,6 @@ index 54d2843..bc51331 100644
  			src/cachecontrol/arm64/cache.S
  			src/setjmp/arm64/setjmp.S
  		)
+-- 
+2.47.3
+

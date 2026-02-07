@@ -1,3 +1,12 @@
+From 9b5b215545ee98c9ecbb58e280926bbc99d9afdd Mon Sep 17 00:00:00 2001
+From: AMG <andresmargar98@proton.me>
+Date: Sat, 7 Feb 2026 12:51:19 +0000
+Subject: [PATCH] 01-cmake
+
+---
+ OSX/CMakeLists.txt | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
 diff --git a/OSX/CMakeLists.txt b/OSX/CMakeLists.txt
 index 6d257dec..86907147 100644
 --- a/OSX/CMakeLists.txt
@@ -30,3 +39,6 @@ index 6d257dec..86907147 100644
  if (BUILD_TARGET_32BIT)
  	add_custom_command(
  		OUTPUT
+-- 
+2.47.3
+

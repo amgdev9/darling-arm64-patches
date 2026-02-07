@@ -1,33 +1,19 @@
 #!/bin/bash
+set -e
 
-patches_folder="$1"
-
-if [ -z "$patches_folder" ]; then
-  echo "Usage: $0 <patches_folder>"
-  exit 1
-fi
-
-patches_folder=$(realpath "$patches_folder")
 repo_root=$(git rev-parse --show-toplevel)
+patches_folder="$repo_root/../patches"
 
-# Apply main repo patch
-main_patch="$patches_folder/patch"
-if [ -f "$main_patch" ]; then
-  git apply "$main_patch"
-fi
+[ -d "$patches_folder" ] || exit 0
 
-# Apply submodule patches
-find "$patches_folder" -type f -name patch ! -path "$main_patch" | while read -r patch_file; do
-  # Compute relative submodule path
-  rel_path="${patch_file#$patches_folder/}"
-  rel_path="$(dirname "$rel_path")"
+git submodule foreach --quiet --recursive '
+  patch_dir="$toplevel/../patches/$path"
+  [ -d "$patch_dir" ] || exit 0
 
-  # Enter submodule and apply patch using absolute path
-  submodule_dir="$repo_root/$rel_path"
-  if [ -d "$submodule_dir" ]; then
-    (cd "$submodule_dir" && git apply "$patch_file")
-  fi
-done
+  git am "$patch_dir"/*.patch 2>/dev/null || true
+'
 
-echo "Patches applied successfully"
+git am "$patches_folder"/*.patch 2>/dev/null || true
+
+echo "Done"
 
