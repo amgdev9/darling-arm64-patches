@@ -1,0 +1,141 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 86424af6f..f365bfef8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -117,6 +117,7 @@ enable_language(ASM-ATT)
+ 
+ option(TARGET_i386 "Enable i386 slices" ON)
+ option(TARGET_x86_64 "Enable x86_64 slices" ON)
++option(TARGET_ARM64 "Enable arm64 slices" OFF)
+ option(DEBIAN_PACKAGING "Packaging for Debian" OFF)
+ option(ENABLE_TESTS "Install in-prefix unit tests" OFF)
+ option(REGENERATE_SDK "Regenerate Header Files For Open Source SDK" OFF)
+diff --git a/cmake/architecture.cmake b/cmake/architecture.cmake
+index 1f6553472..f534ed0f8 100644
+--- a/cmake/architecture.cmake
++++ b/cmake/architecture.cmake
+@@ -1,6 +1,8 @@
+ macro(generate_architecture)
+     if (TARGET_x86_64)
+         set(APPLE_ARCH_64BIT "x86_64")
++    elseif (TARGET_ARM64)
++        set(APPLE_ARCH_64BIT "arm64")
+     else ()
+         set(APPLE_ARCH_64BIT "")
+     endif ()
+@@ -14,6 +16,9 @@ macro(generate_architecture)
+     if (TARGET_x86_64)
+         set(BUILD_TARGET_64BIT TRUE)
+         set(APPLE_TARGET_TRIPLET_64BIT "x86_64-apple-darwin20")
++    elseif (TARGET_ARM64)
++        set(BUILD_TARGET_64BIT TRUE)
++        set(APPLE_TARGET_TRIPLET_64BIT "arm64-apple-darwin20")
+     else ()
+         set(BUILD_TARGET_64BIT FALSE)
+         set(APPLE_TARGET_TRIPLET_64BIT "")
+diff --git a/src/frameworks/CoreServices/CMakeLists.txt b/src/frameworks/CoreServices/CMakeLists.txt
+index 3fac3be55..2bf9bc36a 100644
+--- a/src/frameworks/CoreServices/CMakeLists.txt
++++ b/src/frameworks/CoreServices/CMakeLists.txt
+@@ -83,8 +83,13 @@ reexport(CoreServices SearchKit ${SearchKit_BUILD})
+ reexport(CoreServices SharedFileList ${SharedFileList_BUILD})
+ reexport(CoreServices OSServices ${OSServices_BUILD})
+ 
+-set_property(TARGET CoreServices APPEND_STRING PROPERTY
+-  LINK_FLAGS " -Wl,-reexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/reexport.exp")
++if (TARGET_ARM64) # we're missing functions from libm to reexport, or they don't exist on arm64, so a much shorter list of reexpor      ts
++    set_property(TARGET CoreServices APPEND_STRING PROPERTY
++         LINK_FLAGS " -Wl,-reexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/reexport.arm64.exp")
++else()
++    set_property(TARGET CoreServices APPEND_STRING PROPERTY
++         LINK_FLAGS " -Wl,-reexported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/reexport.exp")
++endif ()
+ 
+ install(FILES SystemVersion.plist DESTINATION "libexec/darling/System/Library/CoreServices")
+-install(FILES SystemVersionCompat.plist DESTINATION "libexec/darling/System/Library/CoreServices")
+\ No newline at end of file
++install(FILES SystemVersionCompat.plist DESTINATION "libexec/darling/System/Library/CoreServices")
+diff --git a/src/frameworks/CoreServices/reexport.arm64.exp b/src/frameworks/CoreServices/reexport.arm64.exp
+new file mode 100644
+index 000000000..8124f9ddb
+--- /dev/null
++++ b/src/frameworks/CoreServices/reexport.arm64.exp
+@@ -0,0 +1,8 @@
++__FE_DFL_ENV
++_exp2
++_fdim
++_log2
++_nan
++_nanf
++_powf
++
+diff --git a/src/libm/CMakeLists.txt b/src/libm/CMakeLists.txt
+index 5be9356bf..3edbb68f3 100644
+--- a/src/libm/CMakeLists.txt
++++ b/src/libm/CMakeLists.txt
+@@ -17,6 +17,10 @@ if (TARGET_i386 OR TARGET_x86_64)
+ 	add_definitions(-Dmovsxw=movsw)
+ endif ()
+ 
++if (TARGET_ARM64)
++        add_definitions(-D__SOFTFP__) # for modf
++endif ()
++
+ set(libm_sources
+ 	Source/abs.c
+ 	Source/sincos.c
+@@ -151,6 +155,39 @@ if (TARGET_i386 OR TARGET_x86_64)
+ 		Source/Intel/truncl.S
+ 		Source/Intel/trunc.S
+ 	)
++elseif (TARGET_ARM64)
++        set(libm_sources ${libm_sources}
++                Source/ARM/acos_freeBSD.c
++                Source/ARM/acosh_freeBSD.c
++                Source/ARM/asin_freeBSD.c
++                Source/ARM/asinh_freeBSD.c
++                Source/ARM/atanh_freeBSD.c
++                Source/ARM/cosh_freeBSD.c
++                Source/ARM/exp_freeBSD.c
++                Source/ARM/exp2_freeBSD.c
++                Source/ARM/expm1_freeBSD.c
++                Source/ARM/erf.c
++                Source/ARM/fdim.c
++                #Source/ARM/fenv.c
++                Source/ARM/fpclassify.c
++                Source/ARM/ilogb.c
++                Source/ARM/fmod.c
++                Source/ARM/fmodf.c
++                Source/ARM/log.c
++                Source/ARM/logb.c
++                Source/ARM/logbf.c
++                Source/ARM/modf_IncrediblySkanky.c
++                Source/ARM/nan.c
++                Source/ARM/nearbyint.c
++                Source/ARM/scalb.c
++                Source/ARM/scalbln.c
++                Source/ARM/scalblnf.c
++                #Source/ARM/sin_cos_scalbn_fdlibm.c
++                Source/ARM/sinh_freeBSD.c
++                Source/ARM/sqrt.c
++                Source/ARM/sqrtf.c
++                Source/ARM/tanh_freeBSD.c
++        )
+ endif ()
+ 
+ # Gross hack to rename symbols in $fenv_access_off variants
+diff --git a/src/startup/CMakeLists.txt b/src/startup/CMakeLists.txt
+index 817f2453a..a551e7aaf 100644
+--- a/src/startup/CMakeLists.txt
++++ b/src/startup/CMakeLists.txt
+@@ -14,6 +14,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Ttext-segment,0x400000 -Wl,-Tbss,0x410000 -Wl,-Tdata,0x420000")
+ add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" -D_GNU_SOURCE -DMLDR_BUILD)
+ 
++if(TARGET_ARM64)
++    add_definitions(-D__arm64__)
++endif()
++
+ add_executable(darling darling.c)
+ 
+ target_link_libraries(darling -lutil)
